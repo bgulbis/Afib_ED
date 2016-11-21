@@ -88,11 +88,14 @@ vital_hr_goal <- vitals_doses %>%
     mutate(primary = time_dose_goal <= 30)
 
 data_tidy <- data_main %>%
+    left_join(dose_first[c("study_id", "dose_first")], by = "study_id") %>%
     left_join(goal_hr, by = "study_id") %>%
     left_join(vital_first_dose, by = "study_id") %>%
     left_join(vital_hr_goal, by = "study_id") %>%
     select(study_id,
-           med, goal,
+           med,
+           dose_first,
+           goal,
            not_goal,
            percent_goal,
            time_dose_goal,
