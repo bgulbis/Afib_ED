@@ -1,0 +1,90 @@
+---
+title: "Atrial Fibrillation Management in the ED"
+output: 
+    html_notebook:
+        code_folding: hide
+        toc: yes
+        toc_float: yes
+        
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(tableone)
+
+data_tidy <- read_rds("../data/final/data_tidy.Rds")
+```
+
+## Primary Endpoint
+
+* HR < 110 bpm within 30 minutes of first dose
+
+```{r}
+df <- data_tidy %>%
+    dmap_at(c("time_dose_goal"), as.numeric) %>%
+    rename("Primary_Endpoint" = primary,
+           "Appropriate_First_Dose" = appropriate_dose,
+           "Vitals_Checked_in_30_Min" = vital_within_30min,
+           "First_Vital_After_Dose_at_Goal" = next_vital_goal,
+           "Minutes_From_First_Dose_to_Goal" = time_dose_goal,
+           "Percent_Time_at_Goal" = percent_goal)
+
+vars <- c("Primary_Endpoint", 
+          "Appropriate_First_Dose", 
+          "Vitals_Checked_in_30_Min",
+          "First_Vital_After_Dose_at_Goal",
+          "Minutes_From_First_Dose_to_Goal",
+          "Percent_Time_at_Goal") 
+
+tbl <- CreateTableOne(vars = vars, strata = "med", data = df)
+ptbl <- print(tbl, printToggle = FALSE)
+knitr::kable(ptbl[, -4], digits = 4)
+```
+
+## Subgroup
+
+* Among patients with an appropriate first dose
+
+```{r}
+df <- data_tidy %>%
+    filter(appropriate_dose) %>%
+    dmap_at(c("time_dose_goal"), as.numeric) %>%
+    rename("Primary_Endpoint" = primary,
+           "Vitals_Checked_in_30_Min" = vital_within_30min,
+           "First_Vital_After_Dose_at_Goal" = next_vital_goal,
+           "Minutes_From_First_Dose_to_Goal" = time_dose_goal,
+           "Percent_Time_at_Goal" = percent_goal)
+
+vars <- c("Primary_Endpoint", 
+          "Vitals_Checked_in_30_Min",
+          "First_Vital_After_Dose_at_Goal",
+          "Minutes_From_First_Dose_to_Goal",
+          "Percent_Time_at_Goal") 
+
+tbl <- CreateTableOne(vars = vars, strata = "med", data = df)
+ptbl <- print(tbl, printToggle = FALSE)
+knitr::kable(ptbl[, -4], digits = 4)
+```
+
+* Those that had vitals checked within 30 minutes of first dose
+
+```{r}
+df <- data_tidy %>%
+    filter(vital_within_30min) %>%
+    dmap_at(c("time_dose_goal"), as.numeric) %>%
+    rename("Primary_Endpoint" = primary,
+           "Appropriate_First_Dose" = appropriate_dose,
+           "First_Vital_After_Dose_at_Goal" = next_vital_goal,
+           "Minutes_From_First_Dose_to_Goal" = time_dose_goal,
+           "Percent_Time_at_Goal" = percent_goal)
+
+vars <- c("Primary_Endpoint", 
+          "Appropriate_First_Dose", 
+          "First_Vital_After_Dose_at_Goal",
+          "Minutes_From_First_Dose_to_Goal",
+          "Percent_Time_at_Goal") 
+
+tbl <- CreateTableOne(vars = vars, strata = "med", data = df)
+ptbl <- print(tbl, printToggle = FALSE)
+knitr::kable(ptbl[, -4], digits = 4)
+```
