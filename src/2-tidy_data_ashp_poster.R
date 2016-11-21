@@ -21,11 +21,14 @@ data_main <- bind_rows(met_main, dilt_main) %>%
 col_nm <- c("study_id", "yes_no", "dose_datetime", "dose", "dose_kg", "appropriate", "last_bolus_datetime")
 col_type <- c("numeric", "text", "date", "numeric", "text", "text", "date")
 # delete columns H:Z reading in as null
+# fix date on meds: C189 (9/2/14 to 9/20/14), G189 (9/2/14 to 9/20/14)
 met_doses <- read_excel(met_file, sheet = "Initial Agent Boluses - Met", skip = 1, col_names = col_nm, col_types = col_type, na = "N/A") %>%
     mutate(med = "metoprolol")
 
 # delete columns H:Z reading in as null
-# fix date on C185
+# fix date on meds: C185
+# fix date on vitals: B172 (6/25/15 to 5/25/15), B173 (6/25/15 00:00 to 5/26/15 00:00)
+# fix date on vitals: B185:B209 (change year from 2016 to 2015)
 dilt_doses <- read_excel(dilt_file, sheet = "Initial Agent Boluses- Dilt", skip = 1, col_names = col_nm, col_types = col_type) %>%
     mutate(med = "diltiazem") %>%
     filter(!is.na(dose_datetime))
