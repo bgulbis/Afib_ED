@@ -65,8 +65,15 @@ dose_first <- data_doses %>%
     filter(!is.na(dose)) %>%
     group_by(study_id, med) %>%
     arrange(study_id, dose_datetime) %>%
+    dmap_at("appropriate", ~ .x == "Yes") %>%
     summarize(dose_datetime_first = first(dose_datetime),
-              dose_first = first(dose))
+              dose_first = first(dose),
+              appropriate = first(appropriate)) %>%
+    left_join(data_main[c("study_id", "Weight (kg)")], by = "study_id") %>%
+    rename(weight = `Weight (kg)`) %>%
+    mutate(dose_wt = dose_first / weight,
+           appropriate = if_else(med == "diltiazem" & dose_wt >= 0.225 & dose_wt <= 0.275, TRUE, appropriate)) %>%
+    dmap_at("appropriate", ~ coalesce(.x, FALSE))
 
 vitals_doses <- data_vitals %>%
     left_join(dose_first, by = c("study_id", "med")) %>%
@@ -88,13 +95,15 @@ vital_hr_goal <- vitals_doses %>%
     mutate(primary = time_dose_goal <= 30)
 
 data_tidy <- data_main %>%
-    left_join(dose_first[c("study_id", "dose_first")], by = "study_id") %>%
+    left_join(dose_first[c("study_id", "dose_first", "appropriate")], by = "study_id") %>%
+    rename(appropriate_dose = appropriate) %>%
     left_join(goal_hr, by = "study_id") %>%
     left_join(vital_first_dose, by = "study_id") %>%
     left_join(vital_hr_goal, by = "study_id") %>%
     select(study_id,
            med,
            dose_first,
+           appropriate_dose,
            goal,
            not_goal,
            percent_goal,
@@ -107,3 +116,4 @@ data_tidy <- data_main %>%
     dmap_at("primary", ~ coalesce(.x, FALSE))
 
 write_csv(data_tidy, "data/tidy/data_ashp_poster.csv")
+write_rds(data_tidy, "data/final/data_tidy.Rds")
