@@ -25,6 +25,7 @@ met_doses <- read_excel(met_file, sheet = "Initial Agent Boluses - Met", skip = 
     mutate(med = "metoprolol")
 
 # delete columns H:Z reading in as null
+# fix date on C185
 dilt_doses <- read_excel(dilt_file, sheet = "Initial Agent Boluses- Dilt", skip = 1, col_names = col_nm, col_types = col_type) %>%
     mutate(med = "diltiazem") %>%
     filter(!is.na(dose_datetime))
